@@ -6,3 +6,6 @@ models/
 
 *.db
 .env
+mlruns/
+artifacts/
+preprocessor/
