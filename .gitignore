@@ -3,9 +3,12 @@ data/
 .bin
 *.yaml
 models/
-
 *.db
 .env
 mlruns/
 artifacts/
 preprocessor/
+*.pkl
+*.xgb
+*.p
+*.pickle
