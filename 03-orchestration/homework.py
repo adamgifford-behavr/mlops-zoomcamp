@@ -3,7 +3,6 @@ import pickle
 from datetime import datetime
 
 import mlflow
-
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 from dotenv import find_dotenv, load_dotenv
