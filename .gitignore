@@ -12,3 +12,4 @@ preprocessor/
 *.xgb
 *.p
 *.pickle
+*.b
