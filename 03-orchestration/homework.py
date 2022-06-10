@@ -1,22 +1,20 @@
-import pandas as pd
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 import os
 import pickle
+from datetime import datetime
 
+import mlflow
+import pandas as pd
+from dateutil.relativedelta import relativedelta
+from dotenv import find_dotenv, load_dotenv
+from prefect import flow, task
+from prefect.deployments import DeploymentSpec
+from prefect.engine import FlowRunContext, get_run_logger
+from prefect.flow_runners import SubprocessFlowRunner
+from prefect.orion.schemas.schedules import CronSchedule
+from prefect.task_runners import SequentialTaskRunner
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
-
-from prefect import flow, task
-from prefect.task_runners import SequentialTaskRunner
-from prefect.engine import FlowRunContext, get_run_logger
-from prefect.deployments import DeploymentSpec
-from prefect.orion.schemas.schedules import CronSchedule
-from prefect.flow_runners import SubprocessFlowRunner
-
-import mlflow
-from dotenv import find_dotenv, load_dotenv
 
 
 @task
@@ -24,13 +22,14 @@ def read_data(path):
     df = pd.read_parquet(path)
     return df
 
+
 @task
 def prepare_features(df, categorical, train=True):
     parent_flow_run_context = FlowRunContext.get()
     parent_logger = get_run_logger(parent_flow_run_context)
 
-    df['duration'] = df.dropOff_datetime - df.pickup_datetime
-    df['duration'] = df.duration.dt.total_seconds() / 60
+    df["duration"] = df.dropOff_datetime - df.pickup_datetime
+    df["duration"] = df.duration.dt.total_seconds() / 60
     df = df[(df.duration >= 1) & (df.duration <= 60)].copy()
 
     mean_duration = df.duration.mean()
@@ -38,18 +37,19 @@ def prepare_features(df, categorical, train=True):
         parent_logger.info(f"The mean duration of training is {mean_duration}")
     else:
         parent_logger.info(f"The mean duration of validation is {mean_duration}")
-    
-    df[categorical] = df[categorical].fillna(-1).astype('int').astype('str')
+
+    df[categorical] = df[categorical].fillna(-1).astype("int").astype("str")
     return df
+
 
 @task
 def train_model(df, categorical):
     parent_flow_run_context = FlowRunContext.get()
     parent_logger = get_run_logger(parent_flow_run_context)
 
-    train_dicts = df[categorical].to_dict(orient='records')
+    train_dicts = df[categorical].to_dict(orient="records")
     dv = DictVectorizer()
-    X_train = dv.fit_transform(train_dicts) 
+    X_train = dv.fit_transform(train_dicts)
     y_train = df.duration.values
 
     parent_logger.info(f"The shape of X_train is {X_train.shape}")
@@ -68,13 +68,14 @@ def train_model(df, categorical):
     parent_logger.info(f"The RMSE of training is: {rmse}")
     return lr, dv, run_id
 
+
 @task
 def run_model(df, categorical, dv, lr, run_id):
     parent_flow_run_context = FlowRunContext.get()
     parent_logger = get_run_logger(parent_flow_run_context)
 
-    val_dicts = df[categorical].to_dict(orient='records')
-    X_val = dv.transform(val_dicts) 
+    val_dicts = df[categorical].to_dict(orient="records")
+    X_val = dv.transform(val_dicts)
     y_pred = lr.predict(X_val)
     y_val = df.duration.values
 
@@ -84,6 +85,7 @@ def run_model(df, categorical, dv, lr, run_id):
 
     parent_logger.info(f"The RMSE of validation is: {rmse}")
     return
+
 
 @task
 def get_paths(date):
@@ -129,7 +131,7 @@ def main(date=None):
 
     train_path, val_path = get_paths(date).result()
 
-    categorical = ['PUlocationID', 'DOlocationID']
+    categorical = ["PUlocationID", "DOlocationID"]
 
     df_train = read_data(train_path)
     df_train_processed = prepare_features(df_train, categorical)
@@ -144,7 +146,7 @@ def main(date=None):
     preproc_filepath = "preprocessors/dv-" + date + ".b"
     with open(preproc_filepath, "wb") as f_out:
         pickle.dump(dv, f_out)
-    
+
     model_filepath = "models/model-" + date + ".bin"
     with open(model_filepath, "wb") as f_out:
         pickle.dump(lr, f_out)
@@ -155,6 +157,7 @@ def main(date=None):
         mlflow.log_param("valid-data-path", val_path)
         mlflow.log_artifact(preproc_filepath, artifact_path="preprocessors")
         mlflow.log_artifact(model_filepath, artifact_path="models")
+
 
 # if __name__ == '__main__':
 #     import sys
@@ -168,12 +171,7 @@ def main(date=None):
 DeploymentSpec(
     name="cron-schedule-deployment",
     flow=main,
-    schedule=CronSchedule(
-        cron="0 9 15 * *",
-        timezone="America/New_York"
-    ),
+    schedule=CronSchedule(cron="0 9 15 * *", timezone="America/New_York"),
     tags=["mlopszoom-hw3"],
     flow_runner=SubprocessFlowRunner(),
 )
-
-
