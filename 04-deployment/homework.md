@@ -16,7 +16,7 @@ Run this notebook for the February 2021 FVH data.
 What's the mean predicted duration for this dataset?
 
 * 11.19
-* 16.19
+* **16.19**
 * 21.19
 * 26.19
 
@@ -47,7 +47,7 @@ df_result.to_parquet(
 What's the size of the output file?
 
 * 9M
-* 19M
+* **19M**
 * 29M
 * 39M
 
@@ -86,7 +86,7 @@ Run the script for March 2021.
 What's the mean predicted duration? 
 
 * 11.29
-* 16.29
+* **s**
 * 21.29
 * 26.29
 
@@ -130,7 +130,7 @@ Now run the script with docker. What's the mean predicted duration
 for April 2021? 
 
 
-* 9.96
+* **9.96**
 * 16.55
 * 25.96
 * 36.55
