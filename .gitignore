@@ -13,3 +13,4 @@ preprocessor/
 *.p
 *.pickle
 *.b
+*.parquet

@@ -122,15 +122,15 @@ docker build -t stream-model-duration:v1 .
 docker run -it --rm \
     -p 8080:8080 \
     -e PREDICTIONS_STREAM_NAME="ride_predictions" \
-    -e RUN_ID="e1efc53e9bd149078b0c12aeaa6365df" \
+    -e RUN_ID="72f8ea3dcf6548789a08b95f3a6d3375" \
     -e TEST_RUN="True" \
-    -e AWS_DEFAULT_REGION="eu-west-1" \
+    -e AWS_DEFAULT_REGION="us-east-1" \
     stream-model-duration:v1
 
 docker run -it --rm \
     -p 8080:8080 \
     -e PREDICTIONS_STREAM_NAME="ride_predictions" \
-    -e RUN_ID="e1efc53e9bd149078b0c12aeaa6365df" \
+    -e RUN_ID="${RUN_ID}" \
     -e TEST_RUN="True" \
     -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
     -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
@@ -158,7 +158,7 @@ $(aws ecr get-login --no-include-email)
 Pushing 
 
 ```bash
-REMOTE_URI="387546586013.dkr.ecr.eu-west-1.amazonaws.com/duration-model"
+REMOTE_URI="849352486600.dkr.ecr.us-east-1.amazonaws.com/duration-model"
 REMOTE_TAG="v1"
 REMOTE_IMAGE=${REMOTE_URI}:${REMOTE_TAG}
 
