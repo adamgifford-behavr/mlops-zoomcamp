@@ -13,7 +13,7 @@ with open(MODEL_FILE, 'rb') as f_in:
 
 app = Flask("duration")
 mongo_client = MongoClient(MONGODB_ADDRESS)
-db = mongo_client.get_database("mlops_prediction_service")
+db = mongo_client.get_database("prediction_service")
 collection = db.get_collection("data")
 
 
@@ -51,8 +51,8 @@ def predict_endpoint():
         'duration': pred
     }
 
-    _save_to_db(record, pred)
-    _send_to_evidently_service(record, pred)
+    _save_to_db(ride, pred)
+    _send_to_evidently_service(ride, pred)
 
     return jsonify(result)
 
