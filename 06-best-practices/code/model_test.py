@@ -5,12 +5,21 @@ import base64
 import boto3
 import mlflow
 
-TEST_RUN = os.getenv('TEST_RUN', 'False') == 'True'
 
+def get_model_location(exp_id, run_id):
+    model_location = os.getenv("MODEL_LOCATION")
+    if model_location is not None:
+        return model_location
+        
+    model_bucket = os.getenv("MODEL_BUCKET", "agifford-mlflow-artifacts-remote")
+    model_location = f"s3://{model_bucket}/{exp_id}/{run_id}/artifacts/model"
+    return model_location
+    
 def load_model(exp_id, run_id):
-    logged_model = f"s3://agifford-mlflow-artifacts-remote/{exp_id}/{run_id}/artifacts/model"
+    model_location = get_model_location(exp_id, run_id) 
+
     # Load model as a PyFuncModel.
-    model = mlflow.pyfunc.load_model(logged_model)
+    model = mlflow.pyfunc.load_model(model_location)
     return model
 
 def base64_decode(encoded_data):
@@ -101,5 +110,9 @@ def init(prediction_stream_name: str, exp_id, run_id: str, test_run: bool):
         kinesis_callback = KinesisCallback(kinesis_client, prediction_stream_name)
         callbacks.append(kinesis_callback.put_record)
 
-    model_service = ModelService(model)
+    model_service = ModelService(
+        model, 
+        model_version=run_id,
+        callbacks=callbacks
+    )
     return model_service
