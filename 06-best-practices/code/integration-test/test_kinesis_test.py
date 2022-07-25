@@ -40,12 +40,9 @@ actual_record = json.loads(records[0]['Data'])
 pprint(actual_record)
 
 expected_record = {
-    'model': 'ride_duration_prediction_model', 
-    'version': "72f8ea3dcf6548789a08b95f3a6d3375", 
-    'prediction': {
-        'ride_duration': 18.2, 
-        'ride_id': 256
-        }
+    'model': 'ride_duration_prediction_model',
+    'version': "72f8ea3dcf6548789a08b95f3a6d3375",
+    'prediction': {'ride_duration': 18.2, 'ride_id': 256},
 }
 
 diff = DeepDiff(actual_record, expected_record, significant_digits=1)
