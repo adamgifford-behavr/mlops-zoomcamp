@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 import os
 import json
 import base64

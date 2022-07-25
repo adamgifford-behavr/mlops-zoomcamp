@@ -1,4 +1,5 @@
 # pylint: disable=duplicate-code
+# pylint: disable=line-too-long
 
 import json
 

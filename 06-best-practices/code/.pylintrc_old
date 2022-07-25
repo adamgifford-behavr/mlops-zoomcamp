@@ -1,0 +1,7 @@
+# this file is first over pyproject.toml if it exists
+# so appending _old to filename so it is ignored
+# keeping it for reference only
+[MESSAGES CONTROL]
+disable=missing-function-docstring,
+        missing-final-newline,
+        missing-class-docstring

@@ -10,11 +10,11 @@ def get_model_location(exp_id, run_id):
     model_location = os.getenv("MODEL_LOCATION")
     if model_location is not None:
         return model_location
-        
+
     model_bucket = os.getenv("MODEL_BUCKET", "agifford-mlflow-artifacts-remote")
     model_location = f"s3://{model_bucket}/{exp_id}/{run_id}/artifacts/model"
     return model_location
-    
+
 def load_model(exp_id, run_id):
     model_location = get_model_location(exp_id, run_id) 
 
@@ -28,9 +28,8 @@ def base64_decode(encoded_data):
     return ride_event
 
 
-
 class ModelService():
-    
+
     def __init__(self, model, model_version=None, callbacks=None) -> None:
         self.model = model
         self.model_version = model_version
@@ -38,19 +37,19 @@ class ModelService():
 
     def prepare_features(self, ride):
         features = {}
-        features['PU_DO'] = '%s_%s' % (ride['PULocationID'], ride['DOLocationID'])
+        features['PU_DO'] = f"{ride['PULocationID']}_{ride['DOLocationID']}"
         features['trip_distance'] = ride['trip_distance']
         return features
 
     def predict(self, features):
         pred = self.model.predict(features)
         return float(pred[0])
-    
+
     def lambda_handler(self, event):
         # print(json.dumps(event))
-        
+
         predictions_events = []
-        
+
         for record in event['Records']:
             encoded_data = record['kinesis']['data']
             ride_event = base64_decode(encoded_data)
@@ -58,10 +57,10 @@ class ModelService():
             # print(ride_event)
             ride = ride_event['ride']
             ride_id = ride_event['ride_id']
-        
+
             features = self.prepare_features(ride)
             prediction = self.predict(features)
-        
+
             prediction_event = {
                 'model': 'ride_duration_prediction_model',
                 'version': self.model_version,
@@ -80,7 +79,7 @@ class ModelService():
             #         Data=json.dumps(prediction_event),
             #         PartitionKey=str(ride_id)
             #     )
-            
+
             predictions_events.append(prediction_event)
 
 
@@ -89,6 +88,8 @@ class ModelService():
         }
 
 class KinesisCallback():
+    # diable particular warning for just one code item
+    # pylint: disable=too-few-public-methods
     def __init__(self, kinesis_client, prediction_stream_name) -> None:
         self.kinesis_client = kinesis_client
         self.prediction_stream_name = prediction_stream_name
@@ -101,12 +102,19 @@ class KinesisCallback():
             PartitionKey=str(ride_id)
         )
 
+def create_kinesis_client():
+    endpoint_url = os.getenv("KINESIS_ENDPOINT_URL")
+    if endpoint_url is None:
+        return boto3.client("kinesis")
+
+    return boto3.client("kinesis", endpoint_url=endpoint_url)
+
 def init(prediction_stream_name: str, exp_id, run_id: str, test_run: bool):
     model = load_model(exp_id, run_id)
 
     callbacks = []
     if not test_run:
-        kinesis_client = boto3.client("kinesis")
+        kinesis_client = create_kinesis_client()
         kinesis_callback = KinesisCallback(kinesis_client, prediction_stream_name)
         callbacks.append(kinesis_callback.put_record)
 

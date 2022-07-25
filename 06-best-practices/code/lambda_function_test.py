@@ -15,4 +15,5 @@ model_service = model_test.init(
 )
 
 def lambda_handler(event, context):
+    # pylint: disable=unused-argument
     return model_service.lambda_handler(event)
