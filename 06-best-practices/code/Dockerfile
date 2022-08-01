@@ -7,6 +7,6 @@ COPY [ "Pipfile", "Pipfile.lock", "./" ]
 
 RUN pipenv install --system --deploy
 
-COPY [ "lambda_function.py", "model.py", "./" ]
+COPY [ "batch.py", "model.bin", "./" ]
 
 CMD [ "lambda_function.lambda_handler" ]

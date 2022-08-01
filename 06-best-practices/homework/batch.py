@@ -30,6 +30,7 @@ def save_data(df, output_file):
 def read_data(filename):
     options = None
     S3_ENDPOINT_URL = os.getenv("S3_ENDPOINT_URL")
+    print()
     if S3_ENDPOINT_URL is not None:
         options = {
             'client_kwargs': {
@@ -92,6 +93,9 @@ def main(year, month):
 
 
 if __name__ == "__main__":
-    year = int(sys.argv[1])
-    month = int(sys.argv[2])
+    if len(sys.argv)<2:
+        year, month = 2021, 1
+    else:
+        year = int(sys.argv[1])
+        month = int(sys.argv[2])
     main(year, month)
