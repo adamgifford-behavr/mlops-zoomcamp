@@ -7,14 +7,22 @@
 
 cd "$(dirname "$0")"
 
-LOCAL_TAG=`date +"%Y-%m-%d-%H-%M"`
-LOCAL_IMAGE_NAME="stream-model-duration:${LOCAL_TAG}"
-export RUN_ID=$RUN_ID
-export EXP_ID=$EXP_ID
-export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
-export PREDICTIONS_STREAM_NAME="ride_predictions"
+
+if [ "${LOCAL_IMAGE_NAME}" == "" ]; then
+    LOCAL_TAG=`date +"%Y-%m-%d-%H-%M"`
+    export LOCAL_IMAGE_NAME="stream-model-duration:${LOCAL_TAG}"
+    echo "LOCAL_IMAGE_NAME is not set, building a new image with tag ${LOCAL_IMAGE_NAME}"
+    docker build -t ${LOCAL_IMAGE_NAME} ..
+else
+    echo "no need to build image ${LOCAL_IMAGE_NAME}"
+fi
+
+# export RUN_ID=$RUN_ID
+# export EXP_ID=$EXP_ID
+# export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+# export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+# export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+# export PREDICTIONS_STREAM_NAME="ride_predictions"
 
 docker build -t ${LOCAL_IMAGE_NAME} -f ../Dockerfile_test ..
 

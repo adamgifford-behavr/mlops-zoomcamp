@@ -58,7 +58,7 @@ pylint --recursive=y .
 pytest tests/
 ```
 
-To prepare the project, run 
+To prepare the project, run
 
 ```bash
 make setup
